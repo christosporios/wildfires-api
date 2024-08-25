@@ -1,0 +1,15 @@
+{
+    "id": "evros",
+    "name": "Evros",
+    "boundingBox": [
+        [41.4533, 25.4671],
+        [40.6444, 26.3780]
+    ],
+    "position": [40.8651, 25.8955],
+    "zoom": 9.5,
+    "start": "2023-08-19T09:00:00Z",
+    "end": "2023-09-04T18:00:00Z",
+    "timezone": "Europe/Athens",
+    "metarAirport": "LGAL",
+    "dataSources": ["metars", "announcements", "fires", "flightPings"]
+}

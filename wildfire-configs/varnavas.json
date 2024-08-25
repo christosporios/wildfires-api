@@ -1,0 +1,15 @@
+{
+    "id": "varnavas",
+    "name": "Varnavas",
+    "boundingBox": [
+        [38.3109, 23.6988],
+        [37.8168, 24.0984]
+    ],
+    "position": [38.2247, 23.9245],
+    "zoom": 10.5,
+    "start": "2024-08-11T12:00:00Z",
+    "end": "2024-08-13T17:00:00Z",
+    "timezone": "Europe/Athens",
+    "metarAirport": "LGAV",
+    "dataSources": ["flightPings", "fires", "metars", "announcements"]
+}
