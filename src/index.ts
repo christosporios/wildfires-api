@@ -9,11 +9,17 @@ import Metars from './dataSources/metars';
 import Fires from './dataSources/fires';
 import Announcements from './dataSources/announcements';
 import FlightPings from './dataSources/flightPings';
+const cors = require('cors');
+
 
 dotenv.config({ path: '.env.local' });
 const app = express();
 const port = process.env.PORT || 3000;
 const dataDir = process.env.DATA_DIR || './data';
+
+app.use(cors({
+    origin: 'https://wildfires.gr'
+}));
 
 // Create the data directory if it doesn't exist
 if (!fs.existsSync(dataDir)) {
