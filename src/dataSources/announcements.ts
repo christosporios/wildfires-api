@@ -173,6 +173,8 @@ export default class Announcements extends DataSource {
             const minLon = Math.min(lon1, lon2);
             const maxLon = Math.max(lon1, lon2);
 
+            const isWithinBounds = (lat: number, lon: number) => lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon;
+
             const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
                 params: {
                     address: `${name}, Greece`,
@@ -183,7 +185,7 @@ export default class Announcements extends DataSource {
             if (response.data.results.length > 0) {
                 for (let i = 0; i < response.data.results.length; i++) {
                     const { lat, lng } = response.data.results[i].geometry.location;
-                    if (lat >= minLat && lat <= maxLat && lng >= minLon && lng <= maxLon) {
+                    if (isWithinBounds(lat, lng)) {
                         if (i > 0) {
                             this.log(`Did not pick first result for ${name}, because it was out of bounds. Result #${i + 1} was within bounds.`);
                         }
@@ -191,14 +193,9 @@ export default class Announcements extends DataSource {
                         return [lat, lng];
                     }
                 }
-                this.log(`No result was within bounds for ${name}`);
-                const { lat, lng } = response.data.results[0].geometry.location;
-                this.log(`Coordinates for ${name}: ${lat}, ${lng}`);
-                return [lat, lng];
-            } else {
-                this.log(`No results found for ${name}`);
-                return null;
             }
+            this.log(`No result was within bounds for ${name}`);
+            return null;
         } catch (error) {
             this.log(`Error getting coordinates for ${name}: ${error}`);
             return null;

@@ -80,13 +80,6 @@ const init = async () => {
 
 init();
 
-app.get('/', (req, res) => {
-    res.send('Hello, World!');
-});
-
-app.get('/wildfires', (req, res) => {
-    res.json(Array.from(wildfires.values()));
-});
 
 const mergeSortedEvents = (a: TimedEvent[], b: TimedEvent[]) => {
     const merged: TimedEvent[] = [];
@@ -171,10 +164,21 @@ app.get('/wildfires/:id', async (req, res) => {
         }
     }
 
+    const mostRecentFirst = (a: TimedEvent, b: TimedEvent) => b.timestamp - a.timestamp;
+    events.sort(mostRecentFirst);
+
     res.json({
         events,
         recency: dataSourceTimeIntervals
     });
+});
+
+app.get('/', (req, res) => {
+    res.send('See https://github.com/christos.porios/wildfires-api for more information');
+});
+
+app.get('/wildfires', (req, res) => {
+    res.json(Array.from(wildfireConfigs.values()));
 });
 
 app.listen(port, () => {

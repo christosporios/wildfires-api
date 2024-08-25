@@ -138,7 +138,9 @@ export default abstract class DataSource {
         if (this.isFetching) {
             this.log('Warning: Fetch in progress, returning existing data');
         }
-        return this.data.filter(event => event.timestamp >= from.getTime() / 1000 && event.timestamp <= to.getTime() / 1000);
+        const events = this.data.filter(event => event.timestamp >= from.getTime() / 1000 && event.timestamp <= to.getTime() / 1000);
+        this.log(`Returning ${events.length} events`);
+        return events;
     }
 
     getCurrentInterval(): { from: Date | null, to: Date | null } {
