@@ -56,17 +56,28 @@ const initDataSources = async () => {
         wildfires.set(wildfireId, wildfireDataSources);
     }
 }
-
 let wildfireConfigs = new Map<string, Wildfire>();
 const updateData = async () => {
     wildfireConfigs = await loadWildfireConfigs();
     for (const [wildfireId, wildfireConfig] of wildfireConfigs.entries()) {
-        const wildfireDataSources = wildfires.get(wildfireId);
-        if (wildfireDataSources) {
-            for (const [dataSourceId, dataSource] of wildfireDataSources.entries()) {
-                if (wildfireConfig.dataSources.includes(dataSourceId)) {
-                    dataSource.updateData(wildfireConfig);
+        let wildfireDataSources = wildfires.get(wildfireId);
+        if (!wildfireDataSources) {
+            // Initialize new wildfire if it doesn't exist
+            wildfireDataSources = new Map<string, DataSource>();
+            wildfires.set(wildfireId, wildfireDataSources);
+        }
+        // Update or create data sources for this wildfire
+        for (const dataSourceName of wildfireConfig.dataSources) {
+            if (dataSourceName in dataSources) {
+                let dataSource = wildfireDataSources.get(dataSourceName);
+                if (!dataSource) {
+                    const dataSourceClass = dataSources[dataSourceName];
+                    dataSource = new dataSourceClass(wildfireConfig);
+                    wildfireDataSources.set(dataSourceName, dataSource);
                 }
+                dataSource.updateData(wildfireConfig);
+            } else {
+                console.warn(`Data source "${dataSourceName}" is configured but not implemented for wildfire ${wildfireId}`);
             }
         }
     }

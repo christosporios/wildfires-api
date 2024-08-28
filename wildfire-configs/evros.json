@@ -11,5 +11,8 @@
     "end": "2023-09-04T18:00:00Z",
     "timezone": "Europe/Athens",
     "metarAirport": "LGAL",
-    "dataSources": ["metars", "announcements", "fires", "flightPings"]
+    "dataSources": ["metars", "announcements", "fires", "flightPings"],
+    "announcementLocationCoordinates": {
+        "Komotini": [41.1182, 25.4035708]
+    }
 }

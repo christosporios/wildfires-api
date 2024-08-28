@@ -17,6 +17,11 @@ export type Wildfire = {
     timezone: string;
     metarAirport: string;
     dataSources: string[];
+    icao24Whitelist?: string[];
+    announcementLocationCoordinates?: {
+        [key: string]: Coordinates;
+    };
+    announcementsLocationSpecifier?: string;
 };
 
 export interface WildfireData {

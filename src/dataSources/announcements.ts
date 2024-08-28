@@ -12,27 +12,44 @@ const anthropic = new Anthropic();
 export default class Announcements extends DataSource {
     private bounds: [Coordinates, Coordinates];
     private scraper: TwitterScraper | null = null;
+    private announcementLocationCoordinates: { [key: string]: Coordinates } | undefined = undefined;
+    private locationSpecifier: string | undefined = undefined;
 
     constructor(wildfire: Wildfire) {
         super(wildfire.id, "announcements");
         this.bounds = wildfire.boundingBox;
+        this.locationSpecifier = wildfire.announcementsLocationSpecifier;
+        this.announcementLocationCoordinates = wildfire.announcementLocationCoordinates;
     }
 
     getMeta(): any {
         return {
-            bounds: this.bounds
+            bounds: this.bounds,
+            announcementLocationCoordinates: this.announcementLocationCoordinates,
+            locationSpecifier: this.locationSpecifier
         };
     }
 
     initFromWildfire(wildfire: Wildfire): void {
         this.bounds = wildfire.boundingBox;
+        this.announcementLocationCoordinates = wildfire.announcementLocationCoordinates;
+        this.locationSpecifier = wildfire.announcementsLocationSpecifier;
     }
 
     initFromSavedData(data: DataSourceData): void {
         this.bounds = data.meta.bounds;
+        this.announcementLocationCoordinates = data.meta.announcementLocationCoordinates;
+        this.locationSpecifier = data.meta.locationSpecifier;
     }
 
     isFullFetchNeeded(wildfire: Wildfire): boolean {
+        if (this.locationSpecifier !== wildfire.announcementsLocationSpecifier) {
+            return true;
+        }
+        // Check if announcementLocationCoordinates have changed
+        if (JSON.stringify(this.announcementLocationCoordinates) !== JSON.stringify(wildfire.announcementLocationCoordinates)) {
+            return true;
+        }
         // Compare the current bounds with the wildfire's bounding box
         return this.bounds.some((currentBound, index) =>
             currentBound.some((coord, coordIndex) =>
@@ -166,6 +183,11 @@ export default class Announcements extends DataSource {
     }
 
     private async getCoordinates(bounds: [Coordinates, Coordinates], name: string): Promise<Coordinates | null> {
+        if (this.announcementLocationCoordinates && this.announcementLocationCoordinates[name]) {
+            this.log(`Using cached coordinates for ${name}: ${this.announcementLocationCoordinates[name]}`);
+            return this.announcementLocationCoordinates[name];
+        }
+
         try {
             const [[lat1, lon1], [lat2, lon2]] = bounds;
             const minLat = Math.min(lat1, lat2);
@@ -177,7 +199,7 @@ export default class Announcements extends DataSource {
 
             const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
                 params: {
-                    address: `${name}, Greece`,
+                    address: `${name}, ${this.locationSpecifier ? this.locationSpecifier : "Greece"}`,
                     key: process.env.GOOGLE_API_KEY
                 }
             });
