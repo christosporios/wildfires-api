@@ -11,5 +11,31 @@
     "end": "2024-08-13T17:00:00Z",
     "timezone": "Europe/Athens",
     "metarAirport": "LGAV",
-    "dataSources": ["flightPings", "fires", "metars", "announcements"]
+    "dataSources": ["flightPings", "fires", "metars", "announcements"],
+    "icao24Whitelist": [
+        "7C2BAC",
+        "7C38D7",
+        "A1D73D",
+        "A12F7A",
+        "A23B27",
+        "AA05CC",
+        "46A0C5",
+        "A1621E",
+        "A1770A",
+        "7C1B24",
+        "A66955",
+        "AB38F8",
+        "7C1A54",
+        "7C032C",
+        "7C44FC",
+        "A24A03",
+        "3931EC",
+        "4B840C"
+    ],
+    "announcementLocationCoordinates": {
+        "Soufani, Marathonos": [38.16171983418461, 23.956717322459156],
+        "Desi Geraka": [38.03886, 23.86917],
+        "Marathonos": [38.013604, 23.975922],
+        "Leoforo Marathonos": [38.013604, 23.975922]
+    }
 }

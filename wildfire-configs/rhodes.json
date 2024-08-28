@@ -1,0 +1,16 @@
+{
+    "id": "rhodes",
+    "name": "Rhodes",
+    "boundingBox": [
+        [36.4789, 27.6162],
+        [35.8453, 28.3154]
+    ],
+    "position": [36.1856, 27.9492],
+    "zoom": 10.5,
+    "start": "2023-07-18T08:00:00Z",
+    "end": "2023-07-27T18:00:00Z",
+    "timezone": "Europe/Athens",
+    "metarAirport": "LGRP",
+    "dataSources": ["metars", "announcements", "fires", "flightPings"],
+    "announcementsLocationSpecifier": "Rhodes"
+}

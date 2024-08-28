@@ -14,6 +14,7 @@ type AircraftStats = {
     icao24: string;
     callsign: string;
     lowestAltitude: number;
+    allAltitudesNull: boolean
     squawks: string[];
 }
 
@@ -34,24 +35,29 @@ const trino: Trino = Trino.create({
 export default class FlightPings extends DataSource {
     private bounds: [Coordinates, Coordinates];
     private token: { access_token: string, exp: number } | null = null;
+    private icao24Whitelist: string[] | undefined;
 
     constructor(wildfire: Wildfire) {
         super(wildfire.id, "flightPings");
         this.bounds = wildfire.boundingBox;
+        this.icao24Whitelist = wildfire.icao24Whitelist;
     }
 
     initFromWildfire(wildfire: Wildfire): void {
         this.bounds = wildfire.boundingBox;
+        this.icao24Whitelist = wildfire.icao24Whitelist;
     }
 
     getMeta(): any {
         return {
-            bounds: this.bounds
+            bounds: this.bounds,
+            icao24Whitelist: this.icao24Whitelist
         };
     }
 
     initFromSavedData(data: DataSourceData): void {
         this.bounds = data.meta.bounds;
+        this.icao24Whitelist = data.meta.icao24Whitelist;
     }
 
     isFullFetchNeeded(wildfire: Wildfire): boolean {
@@ -90,12 +96,17 @@ export default class FlightPings extends DataSource {
                 if (squawk && !existingStats.squawks.includes(squawk)) {
                     existingStats.squawks.push(squawk);
                 }
+
+                if (result[columns.indexOf("baroaltitude")] !== null) {
+                    existingStats.allAltitudesNull = false;
+                }
             } else {
                 aircraftStats.set(result[columns.indexOf("icao24")], {
                     icao24: result[columns.indexOf("icao24")],
                     callsign: result[columns.indexOf("callsign")],
                     lowestAltitude: result[columns.indexOf("baroaltitude")],
-                    squawks: squawk ? [squawk] : []
+                    squawks: squawk ? [squawk] : [],
+                    allAltitudesNull: result[columns.indexOf("baroaltitude")] === null
                 });
             }
         }
@@ -109,14 +120,19 @@ export default class FlightPings extends DataSource {
         let maxLat = Math.max(this.bounds[0][0], this.bounds[1][0]);
         let minLon = Math.min(this.bounds[0][1], this.bounds[1][1]);
         let maxLon = Math.max(this.bounds[0][1], this.bounds[1][1]);
-        const query = `select * from state_vectors_data4
+        let query = `select * from state_vectors_data4
             where
             hour >= ${this.getHourStartUnix(fetchFrom)} AND
             hour <= ${this.getHourEndUnix(fetchTo)}
-            and lat between ${minLat} and ${maxLat}
-            and lon between ${minLon} and ${maxLon}
-            and time % 30 = 0
-            and baroaltitude < 3000`; // 3000 METERS
+            and time % 10 = 0`;
+        if (this.icao24Whitelist) {
+            let whiteList = this.icao24Whitelist.map(icao24 => `'${icao24.toLowerCase()}'`).join(",");
+            query += ` and icao24 in (${whiteList}) and lat is not null and lon is not null`;
+        } else {
+            query += ` and lat between ${minLat} and ${maxLat}
+            and lon between ${minLon} and ${maxLon}`;
+        }
+
         this.log(query);
         const startTime = Date.now();
         const result = await this.trinoQuery(query);
@@ -139,15 +155,18 @@ export default class FlightPings extends DataSource {
         this.log(`Got ${allResults.length} rows and ${columns.length} columns, for ${aircraftStats.size} aircraft`);
 
         const potentialFirefighterPings = allResults.filter((row: any) => { // filter out aircraft that remained above 1000 meters
+            if (this.icao24Whitelist) {
+                return true;
+            }
             const stats = aircraftStats.get(row[columns.indexOf("icao24")]);
+            if (stats && stats.allAltitudesNull) {
+                return true; // if all altitudes are null, this might be a firefighter
+            }
             return stats && stats.lowestAltitude < 1000; // meters
         }).filter((row: any) => { // filter out common airline callsigns
             const callsign = row[columns.indexOf("callsign")];
             return !callsign || !callsignPrefixBlacklist.some(prefix => callsign.startsWith(prefix));
         });
-
-
-
 
         this.log(`Discarding ${allResults.length - potentialFirefighterPings.length} rows of aircraft that don't look like firefighters`);
 
@@ -230,7 +249,7 @@ export default class FlightPings extends DataSource {
                     access_token: payload.access_token,
                     exp: decodedToken.exp
                 };
-                console.log(`Got token expiring at ${new Date(this.token.exp * 1000).toISOString()}`);
+                this.log(`Got token expiring at ${new Date(this.token.exp * 1000).toISOString()}`);
                 return payload.access_token;
             } else {
                 console.warn("Failed to decode JWT token");

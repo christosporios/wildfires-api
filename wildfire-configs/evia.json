@@ -1,0 +1,16 @@
+{
+    "id": "evia",
+    "name": "Evia",
+    "boundingBox": [
+        [39.0835, 23.0084],
+        [38.4874, 23.5240]
+    ],
+    "position": [38.8525, 23.3229],
+    "zoom": 10.5,
+    "start": "2021-08-03T08:00:00Z",
+    "end": "2021-08-11T18:00:00Z",
+    "timezone": "Europe/Athens",
+    "metarAirport": "LGTG",
+    "dataSources": ["metars", "announcements", "fires", "flightPings"],
+    "announcementsLocationSpecifier": "Evia"
+}

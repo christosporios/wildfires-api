@@ -29,7 +29,7 @@ export default class Fires extends DataSource {
     }
 
     async fetchInterval(from: Date, to: Date): Promise<TimedEvent[]> {
-        const sources = ['VIIRS_NOAA20_NRT', 'VIIRS_NOAA21_NRT', 'MODIS_NRT'];
+        const sources = ['VIIRS_NOAA20_NRT', 'VIIRS_NOAA21_NRT', 'MODIS_NRT', 'VIIRS_SNPP_NRT', 'VIIRS_SNPP_SP'];
         const [[north, west], [south, east]] = this.bounds;
         const areaCoordinates = `${west},${south},${east},${north}`;
 
@@ -84,7 +84,7 @@ export default class Fires extends DataSource {
                         if (!row.trim()) continue;
                         const columns = row.split(',');
 
-                        const timestamp = new Date(`${columns[headerMap.acq_date]} ${columns[headerMap.acq_time].substring(0, 2)}:${columns[headerMap.acq_time].substring(2, 4)}`).getTime() / 1000;
+                        const timestamp = new Date(`${columns[headerMap.acq_date]}T${columns[headerMap.acq_time].substring(0, 2)}:${columns[headerMap.acq_time].substring(2, 4)}:00Z`).getTime() / 1000;
 
                         if (timestamp >= from.getTime() / 1000 && timestamp <= to.getTime() / 1000) {
                             const fire: Fire = {
